@@ -51,11 +51,12 @@ object StateJson {
         }
         put("focusMinutes", s.focusMinutes)
         put("askWhereWasI", s.askWhereWasI)
-        put("dock", JSONArray(s.dock))
+        put("favourites", JSONArray(s.favourites))
         put("distracting", JSONArray(s.distracting.sorted()))
         put("promptDay", s.promptDay)
         put("promptOffset", s.promptOffset)
         put("themeMode", s.themeMode.name)
+        put("layout", encodeLayout(s.layout))
         put("nextId", s.nextId)
     }
 
@@ -109,12 +110,54 @@ object StateJson {
             },
             focusMinutes = o.optInt("focusMinutes", defaults.focusMinutes),
             askWhereWasI = o.optBoolean("askWhereWasI", false),
-            dock = o.optArray("dock").strings(),
+            // "dock" is the name used by version 0.1.0
+            favourites = o.optArray(if (o.has("favourites")) "favourites" else "dock").strings(),
             distracting = o.optArray("distracting").strings().toSet(),
             promptDay = o.optLong("promptDay", -1),
             promptOffset = o.optInt("promptOffset", 0),
             themeMode = enumOr(o.optString("themeMode"), ThemeMode.SYSTEM),
+            layout = o.optJSONObject("layout")?.let { decodeLayout(it) } ?: defaults.layout,
             nextId = o.optLong("nextId", defaults.nextId),
+        )
+    }
+
+    private fun encodeLayout(l: LayoutPrefs): JSONObject = JSONObject()
+        .put("style", l.style.name)
+        .put("hand", l.hand.name)
+        .put("iconSize", l.iconSize.name)
+        .put("labelSize", l.labelSize.name)
+        .put("font", l.font.name)
+        .put("clock", l.clock.name)
+        .put("showDate", l.showDate)
+        .put("showXp", l.showXp)
+        .put("favouritesAtBottom", l.favouritesAtBottom)
+        .put("accent", l.accent)
+        .put("pills", JSONArray(l.pills.map { it.name }))
+        .put("swipeUp", l.swipeUp.name)
+        .put("swipeDown", l.swipeDown.name)
+        .put("haptics", l.haptics)
+
+    private fun decodeLayout(o: JSONObject): LayoutPrefs {
+        val d = LayoutPrefs()
+        return LayoutPrefs(
+            style = enumOr(o.optString("style"), d.style),
+            hand = enumOr(o.optString("hand"), d.hand),
+            iconSize = enumOr(o.optString("iconSize"), d.iconSize),
+            labelSize = enumOr(o.optString("labelSize"), d.labelSize),
+            font = enumOr(o.optString("font"), d.font),
+            clock = enumOr(o.optString("clock"), d.clock),
+            showDate = o.optBoolean("showDate", d.showDate),
+            showXp = o.optBoolean("showXp", d.showXp),
+            favouritesAtBottom = o.optBoolean("favouritesAtBottom", d.favouritesAtBottom),
+            accent = o.optInt("accent", d.accent),
+            pills = if (o.has("pills")) {
+                o.optArray("pills").strings().mapNotNull { name -> WidgetId.entries.firstOrNull { it.name == name } }.distinct()
+            } else {
+                d.pills
+            },
+            swipeUp = enumOr(o.optString("swipeUp"), d.swipeUp),
+            swipeDown = enumOr(o.optString("swipeDown"), d.swipeDown),
+            haptics = o.optBoolean("haptics", d.haptics),
         )
     }
 

@@ -7,7 +7,31 @@ with widgets built to help an ADHD brain start, stay on track and come back.
 It's the phone sibling of the Decaf Linux remix. Runs on Android 8 and up,
 tuned for Android 15. Everything stays on the phone.
 
-## What's on the home screen
+## The home screen
+
+A clean, Niagara-style layout:
+
+- **Clock and date** at the top (tap the clock for alarms, the date for your calendar).
+- **Widget pills**: one-line summaries of the widgets you choose, like your one
+  thing, the timer counting down, or your streak. Tap a pill to open the full
+  widget in a sheet. Everything else is under **＋**.
+- **Favourites**: up to 10 apps as a big text list, near your thumb.
+- **Alphabet rail** down the edge: slide your finger along it and the letters
+  swell like a wave while the list jumps to that letter. Let go, tap the app.
+  The magnifier at the top of the rail searches.
+- **Swipe up** to search, **swipe down** for notifications (both changeable).
+
+## Make it yours (Settings)
+
+- **Layout:** right- or left-handed, favourites near your thumb or at the top,
+  app icons hidden/small/medium/large, app name size and font.
+- **Look:** full CNI background or your phone's wallpaper, light/dark/match
+  phone, accent colour.
+- **Top of the screen:** big, small or no clock; date and level on or off.
+- **Home widgets:** which widgets show as pills, and their order.
+- **Gestures:** what swipe up and swipe down do; haptics on or off.
+
+## The widgets
 
 **Focus**
 - **One thing now.** Only your current task, big. *Done* brings up the next one.
@@ -35,11 +59,10 @@ tuned for Android 15. Everything stays on the phone.
 - **Design prompt of the day.** A small mechanic, art or level prompt.
 - **XP and levels.** Finishing things earns XP, with confetti and a level badge.
 
-**Launcher**
-- Dock for up to 5 apps, and all apps behind the yellow button (or swipe up on the dock).
-- Search in the app drawer. Press Enter to open the first result.
-- Long-press any app to pin it, give it a speed bump, or open its app info.
-- Light, dark, or match the phone.
+**Apps**
+- Long-press any app to add it to your favourites (and reorder them), give it a
+  speed bump, or open its app info.
+- Search: type and press Enter to open the first result.
 
 ## How it's built
 
@@ -47,8 +70,9 @@ tuned for Android 15. Everything stays on the phone.
 - `data/Store.kt` holds all state and saves it as JSON in the app's private
   storage. `data/Progress.kt` has the streak, XP and day-plan rules.
 - `timer/TimerAlarm.kt` uses an exact alarm so sprints end on time.
-- `ui/widgets/` has the home-screen widgets, `ui/screens/` the drawer, speed
-  bump and settings pages.
+- `ui/screens/HomeScreen.kt` is the home screen (pills, favourites, alphabet
+  rail, sheets). `ui/widgets/` has the full widget cards, `ui/screens/` the
+  search, speed bump and settings pages.
 
 ## What a launcher can't do
 

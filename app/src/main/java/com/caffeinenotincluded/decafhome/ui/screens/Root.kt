@@ -2,7 +2,9 @@ package com.caffeinenotincluded.decafhome.ui.screens
 
 import android.Manifest
 import android.app.Activity
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
+import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,6 +13,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -23,12 +26,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.caffeinenotincluded.decafhome.R
 import com.caffeinenotincluded.decafhome.data.Celebration
+import com.caffeinenotincluded.decafhome.data.HomeStyle
 import com.caffeinenotincluded.decafhome.decaf
 import com.caffeinenotincluded.decafhome.timer.Notifications
 import com.caffeinenotincluded.decafhome.ui.components.CelebrationLayer
@@ -54,11 +61,27 @@ fun DecafRoot(nav: HomeNav) {
         }
     }
 
-    DecafTheme(state.themeMode) {
-        // Status and navigation bar icons follow the app's own light/dark choice
-        // (the speed bump is always dark).
+    DecafTheme(state.themeMode, state.layout.style) {
         val view = LocalView.current
-        val darkBars = LocalDecafColors.current.dark || nav.overlay is Overlay.SpeedBump
+        val minimal = state.layout.style == HomeStyle.MINIMAL
+
+        // Wallpaper style: let the phone's wallpaper show through the window.
+        LaunchedEffect(minimal) {
+            val window = (view.context as? Activity)?.window ?: return@LaunchedEffect
+            if (minimal) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+                window.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+            } else {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+                window.setBackgroundDrawableResource(R.color.ink)
+            }
+        }
+
+        // Status and navigation bar icons follow the app's own light/dark choice.
+        // The speed bump and the wallpaper home screen are always dark behind them.
+        val darkBars = LocalDecafColors.current.dark ||
+            nav.overlay is Overlay.SpeedBump ||
+            (minimal && nav.overlay == null)
         SideEffect {
             val window = (view.context as? Activity)?.window ?: return@SideEffect
             WindowCompat.getInsetsController(window, view).apply {
@@ -74,6 +97,7 @@ fun DecafRoot(nav: HomeNav) {
         val haptics = LocalHapticFeedback.current
         LaunchedEffect(Unit) {
             app.store.celebrations.collectLatest { c ->
+                nav.sheet = null   // so the confetti isn't hidden behind a sheet
                 celebration = c
                 serial++
                 showBanner = true
@@ -84,7 +108,20 @@ fun DecafRoot(nav: HomeNav) {
         }
 
         Box(Modifier.fillMaxSize()) {
-            DotGrid(Modifier.fillMaxSize())
+            if (minimal) {
+                // Darken the wallpaper a little so light text stays readable.
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color.Black.copy(alpha = 0.35f), Color.Black.copy(alpha = 0.12f), Color.Black.copy(alpha = 0.5f)),
+                            ),
+                        ),
+                )
+            } else {
+                DotGrid(Modifier.fillMaxSize())
+            }
             HomeScreen(state, apps, actions)
 
             AnimatedVisibility(

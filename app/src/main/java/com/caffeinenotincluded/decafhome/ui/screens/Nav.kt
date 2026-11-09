@@ -9,6 +9,7 @@ import com.caffeinenotincluded.decafhome.data.AppCatalog
 import com.caffeinenotincluded.decafhome.data.AppEntry
 import com.caffeinenotincluded.decafhome.data.Store
 import com.caffeinenotincluded.decafhome.data.TimerKind
+import com.caffeinenotincluded.decafhome.data.WidgetId
 import com.caffeinenotincluded.decafhome.timer.TimerAlarm
 
 /** Screens that open on top of the home screen. */
@@ -23,9 +24,22 @@ sealed interface Overlay {
     data class EditProject(val projectId: Long) : Overlay
 }
 
-/** What's open. Pressing Home closes everything and scrolls back to the top. */
+/** Bottom sheets that open from the widget pills. */
+sealed interface HomeSheet {
+    data class Widget(val id: WidgetId) : HomeSheet
+    data object WhereWasI : HomeSheet
+    data object AllWidgets : HomeSheet
+}
+
+/** What's open. Pressing Home closes everything and goes back to favourites. */
 class HomeNav {
     var overlay by mutableStateOf<Overlay?>(null)
+    var sheet by mutableStateOf<HomeSheet?>(null)
+
+    /** Browsing all apps from the alphabet rail, and the letter it's on. */
+    var browsing by mutableStateOf(false)
+    var browseLetter by mutableStateOf<Char?>(null)
+
     var homePresses by mutableIntStateOf(0)
         private set
 
@@ -34,17 +48,32 @@ class HomeNav {
 
     fun open(page: Overlay) {
         fromSettings = overlay == Overlay.Settings
+        sheet = null
         overlay = page
     }
 
+    /** Back: close the top-most thing that's open. */
     fun close() {
-        overlay = if (fromSettings && overlay != Overlay.Settings) Overlay.Settings else null
-        fromSettings = false
+        when {
+            sheet != null -> sheet = null
+            overlay != null -> {
+                overlay = if (fromSettings && overlay != Overlay.Settings) Overlay.Settings else null
+                fromSettings = false
+            }
+            browsing -> stopBrowsing()
+        }
+    }
+
+    fun stopBrowsing() {
+        browsing = false
+        browseLetter = null
     }
 
     fun goHome() {
         overlay = null
+        sheet = null
         fromSettings = false
+        stopBrowsing()
         homePresses++
     }
 }
@@ -60,7 +89,7 @@ class HomeActions(
     /** Opens an app, stopping at the speed bump first if it's marked as distracting. */
     fun launch(app: AppEntry) {
         if (app.packageName in store.state.value.distracting) {
-            nav.overlay = Overlay.SpeedBump(app)
+            nav.open(Overlay.SpeedBump(app))
         } else {
             catalog.launch(app)
             if (nav.overlay == Overlay.Drawer) nav.overlay = null
@@ -89,5 +118,14 @@ class HomeActions(
         if (store.finishTimer(System.currentTimeMillis()) != null) {
             TimerAlarm.cancel(context)
         }
+    }
+
+    /** Pulls down the notification shade (phones that allow it). */
+    fun expandNotifications(): Boolean = try {
+        val service = context.getSystemService("statusbar")
+        Class.forName("android.app.StatusBarManager").getMethod("expandNotificationsPanel").invoke(service)
+        true
+    } catch (e: Throwable) {
+        false
     }
 }

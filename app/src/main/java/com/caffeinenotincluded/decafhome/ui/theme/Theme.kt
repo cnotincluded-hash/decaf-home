@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import com.caffeinenotincluded.decafhome.R
+import com.caffeinenotincluded.decafhome.data.HomeStyle
 import com.caffeinenotincluded.decafhome.data.ThemeMode
 
 /** Caffeine Not Included colours. */
@@ -46,6 +47,10 @@ data class DecafColors(
     val onCard: Color,
     val mutedOnCard: Color,
     val outline: Color,
+    /** Wallpaper style: home text sits on the phone's wallpaper, not on brand paper. */
+    val minimal: Boolean = false,
+    val homeText: Color = onBackground,
+    val homeMuted: Color = mutedOnBackground,
 )
 
 private val LightDecaf = DecafColors(
@@ -117,13 +122,19 @@ private val DecafType = Typography(
 )
 
 @Composable
-fun DecafTheme(mode: ThemeMode, content: @Composable () -> Unit) {
+fun DecafTheme(mode: ThemeMode, style: HomeStyle = HomeStyle.CNI, content: @Composable () -> Unit) {
     val dark = when (mode) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
-    val decaf = if (dark) DarkDecaf else LightDecaf
+    val base = if (dark) DarkDecaf else LightDecaf
+    val decaf = if (style == HomeStyle.MINIMAL) {
+        // Light text over a darkened wallpaper, whatever the theme.
+        base.copy(minimal = true, homeText = Brand.Cream, homeMuted = Brand.Cream.copy(alpha = 0.78f))
+    } else {
+        base
+    }
     val scheme = if (dark) {
         darkColorScheme(
             primary = Brand.Sunshine,

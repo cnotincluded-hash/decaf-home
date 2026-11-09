@@ -73,7 +73,7 @@ import com.caffeinenotincluded.decafhome.ui.widgets.BodyText
 
 /** A full-screen page over the home screen, with a back arrow and a title. */
 @Composable
-private fun Page(title: String, onBack: () -> Unit, content: LazyListScope.() -> Unit) {
+internal fun Page(title: String, onBack: () -> Unit, content: LazyListScope.() -> Unit) {
     val colors = LocalDecafColors.current
     Column(
         Modifier
@@ -94,110 +94,6 @@ private fun Page(title: String, onBack: () -> Unit, content: LazyListScope.() ->
             verticalArrangement = Arrangement.spacedBy(14.dp),
             content = content,
         )
-    }
-}
-
-// ---- Settings -----------------------------------------------------------------------------
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun SettingsPage(state: DecafState, actions: HomeActions) {
-    val context = LocalContext.current
-    Page("Settings", onBack = { actions.nav.close() }) {
-        item {
-            BrandCard("Home app", Brand.Sunshine) {
-                BodyText("To use Decaf Home every time you press Home, choose it as your home app.")
-                Spacer(Modifier.size(10.dp))
-                PillButton("Choose home app", onClick = {
-                    runCatching {
-                        context.startActivity(Intent(Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                    }
-                })
-                Spacer(Modifier.size(6.dp))
-                BodyText("You can switch back to your phone's launcher in the same place.", muted = true)
-            }
-        }
-        item {
-            BrandCard("Look", Brand.Lilac) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(ThemeMode.SYSTEM to "Match phone", ThemeMode.LIGHT to "Light", ThemeMode.DARK to "Dark").forEach { (mode, label) ->
-                        ChoiceChip(label, state.themeMode == mode, onClick = { actions.store.setThemeMode(mode) }, accent = Brand.Lilac)
-                    }
-                }
-            }
-        }
-        item {
-            BrandCard("Dev streak", Brand.Coral) {
-                BodyText("Rest days per week. Missing this many days in a week won't break your streak.")
-                Spacer(Modifier.size(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    (0..3).forEach { days ->
-                        ChoiceChip("$days", state.restDaysPerWeek == days, onClick = { actions.store.setRestDays(days) }, accent = Brand.Coral)
-                    }
-                }
-            }
-        }
-        item {
-            BrandCard("Speed bumps", Brand.Coral) {
-                BodyText(
-                    when (state.distracting.size) {
-                        0 -> "No apps have a speed bump yet."
-                        1 -> "1 app opens after a 10-second pause."
-                        else -> "${state.distracting.size} apps open after a 10-second pause."
-                    },
-                )
-                Spacer(Modifier.size(4.dp))
-                BodyText(
-                    "Only when opened from Decaf Home. Notifications and recent apps skip it.",
-                    muted = true,
-                )
-                Spacer(Modifier.size(10.dp))
-                PillButton("Choose apps", onClick = { actions.nav.open(Overlay.SpeedBumpApps) }, color = Brand.Coral)
-            }
-        }
-        item {
-            BrandCard("Plans and breaks", Brand.Sky) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PillButton("Day plan", onClick = { actions.nav.open(Overlay.DayPlan) }, color = Brand.Sky, small = true)
-                    PillButton("Break menu", onClick = { actions.nav.open(Overlay.Breaks) }, color = Brand.Mint, small = true)
-                }
-            }
-        }
-        if (state.projects.isNotEmpty()) {
-            item {
-                BrandCard("Projects", Brand.Lilac) {
-                    state.projects.forEach { project ->
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable { actions.nav.open(Overlay.EditProject(project.id)) }
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Box(
-                                Modifier
-                                    .size(14.dp)
-                                    .background(Brand.Accents[project.color.mod(Brand.Accents.size)], CircleShape)
-                                    .border(1.5.dp, LocalDecafColors.current.outline, CircleShape),
-                            )
-                            Spacer(Modifier.width(10.dp))
-                            BodyText(project.name, modifier = Modifier.weight(1f))
-                            BodyText("Edit", muted = true)
-                        }
-                    }
-                }
-            }
-        }
-        item {
-            BrandCard("About", Brand.Mint) {
-                BodyText("Decaf Home 0.1.0, by Caffeine Not Included.")
-                Spacer(Modifier.size(4.dp))
-                BodyText(
-                    "Everything stays on this phone. If Android backup is on, it's included in your phone's backup.",
-                    muted = true,
-                )
-            }
-        }
     }
 }
 

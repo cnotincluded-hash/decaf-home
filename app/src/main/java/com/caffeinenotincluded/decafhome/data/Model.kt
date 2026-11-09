@@ -34,7 +34,7 @@ data class DecafState(
     val askWhereWasI: Boolean = false,
 
     // Launcher
-    val dock: List<String> = emptyList(),          // app keys, max 5
+    val favourites: List<String> = emptyList(),    // app keys, in order, max 10
     val distracting: Set<String> = emptySet(),     // package names behind the speed bump
 
     // Design prompt of the day
@@ -42,6 +42,7 @@ data class DecafState(
     val promptOffset: Int = 0,
 
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val layout: LayoutPrefs = LayoutPrefs(),
     val nextId: Long = 100,
 ) {
     val activeProject: Project? get() = projects.firstOrNull { it.id == activeProjectId }
@@ -86,6 +87,56 @@ data class Timer(
 )
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
+
+// ---- Customisation -------------------------------------------------------------
+
+/** The widgets, each of which can sit on the home screen as a pill. */
+enum class WidgetId(val label: String) {
+    ONE_THING("One thing now"),
+    TIMER("Focus timer"),
+    NOW_NEXT("Now / Next"),
+    PROJECT("Project spotlight"),
+    IDEAS("Idea parking lot"),
+    COUNTDOWNS("Countdowns"),
+    STREAK("Dev streak"),
+    BREAKS("Break menu"),
+    PROMPT("Design prompt"),
+}
+
+enum class HomeStyle(val label: String) { CNI("Full CNI"), MINIMAL("Wallpaper") }
+enum class Hand(val label: String) { RIGHT("Right-handed"), LEFT("Left-handed") }
+enum class IconSize(val label: String, val size: Int) { HIDDEN("Hidden", 0), SMALL("Small", 28), MEDIUM("Medium", 36), LARGE("Large", 46) }
+enum class LabelSize(val label: String, val size: Int) { SMALL("Small", 18), MEDIUM("Medium", 22), LARGE("Large", 28) }
+enum class LabelFont(val label: String) { FREDOKA("Fredoka"), NUNITO("Nunito"), SYSTEM("Phone font") }
+enum class ClockStyle(val label: String) { BIG("Big"), SMALL("Small"), HIDDEN("Hidden") }
+
+enum class GestureAction(val label: String) {
+    SEARCH("Search apps"),
+    NOTIFICATIONS("Notifications"),
+    TIMER("Focus timer"),
+    ONE_THING("One thing now"),
+    NOTHING("Nothing"),
+}
+
+/** How the home screen looks and behaves. All of it is in Settings. */
+data class LayoutPrefs(
+    val style: HomeStyle = HomeStyle.CNI,
+    val hand: Hand = Hand.RIGHT,
+    val iconSize: IconSize = IconSize.MEDIUM,
+    val labelSize: LabelSize = LabelSize.MEDIUM,
+    val font: LabelFont = LabelFont.FREDOKA,
+    val clock: ClockStyle = ClockStyle.BIG,
+    val showDate: Boolean = true,
+    val showXp: Boolean = true,
+    val favouritesAtBottom: Boolean = true,
+    val accent: Int = 0,                         // index into the brand accents
+    val pills: List<WidgetId> = DefaultPills,    // shown on home, in this order
+    val swipeUp: GestureAction = GestureAction.SEARCH,
+    val swipeDown: GestureAction = GestureAction.NOTIFICATIONS,
+    val haptics: Boolean = true,
+)
+
+val DefaultPills = listOf(WidgetId.ONE_THING, WidgetId.TIMER, WidgetId.PROJECT, WidgetId.STREAK, WidgetId.IDEAS)
 
 /** Something worth a little party on screen. */
 data class Celebration(val message: String, val points: Int, val newLevel: Int? = null)

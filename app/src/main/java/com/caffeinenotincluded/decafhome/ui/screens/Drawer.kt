@@ -118,7 +118,7 @@ fun AppDrawer(state: DecafState, apps: List<AppEntry>, actions: HomeActions) {
                 .padding(vertical = 10.dp),
         )
         Text(
-            "Long-press an app to pin it to the dock or give it a speed bump.",
+            "Long-press an app to add it to your favourites or give it a speed bump.",
             fontFamily = Nunito,
             fontWeight = FontWeight.SemiBold,
             fontSize = 13.sp,
@@ -140,7 +140,7 @@ fun AppDrawer(state: DecafState, apps: List<AppEntry>, actions: HomeActions) {
 @Composable
 private fun DrawerTile(app: AppEntry, state: DecafState, actions: HomeActions) {
     var menu by remember { mutableStateOf(false) }
-    val pinned = app.key in state.dock
+    val pinned = app.key in state.favourites
     val bumped = app.packageName in state.distracting
     Box {
         AppTile(app = app, onClick = { actions.launch(app) }, onLongClick = { menu = true })
@@ -160,14 +160,14 @@ private fun DrawerTile(app: AppEntry, state: DecafState, actions: HomeActions) {
                 text = {
                     Text(
                         when {
-                            pinned -> "Unpin from dock"
-                            state.dock.size >= Store.MAX_DOCK -> "Dock is full (${Store.MAX_DOCK})"
-                            else -> "Pin to dock"
+                            pinned -> "Remove from favourites"
+                            state.favourites.size >= Store.MAX_FAVOURITES -> "Favourites are full (${Store.MAX_FAVOURITES})"
+                            else -> "Add to favourites"
                         },
                     )
                 },
-                enabled = pinned || state.dock.size < Store.MAX_DOCK,
-                onClick = { actions.store.toggleDock(app.key); menu = false },
+                enabled = pinned || state.favourites.size < Store.MAX_FAVOURITES,
+                onClick = { actions.store.toggleFavourite(app.key); menu = false },
             )
             DropdownMenuItem(
                 text = { Text(if (bumped) "Remove speed bump" else "Add speed bump") },

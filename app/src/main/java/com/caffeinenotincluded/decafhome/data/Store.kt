@@ -249,12 +249,17 @@ class Store(private val file: File) {
 
     // ---- Launcher --------------------------------------------------------------
 
-    fun toggleDock(key: String) = update { s ->
+    fun toggleFavourite(key: String) = update { s ->
         when {
-            key in s.dock -> s.copy(dock = s.dock - key)
-            s.dock.size >= MAX_DOCK -> s
-            else -> s.copy(dock = s.dock + key)
+            key in s.favourites -> s.copy(favourites = s.favourites - key)
+            s.favourites.size >= MAX_FAVOURITES -> s
+            else -> s.copy(favourites = s.favourites + key)
         }
+    }
+
+    /** Moves a favourite up (-1) or down (+1) the list. */
+    fun moveFavourite(key: String, delta: Int) = update { s ->
+        s.copy(favourites = s.favourites.moved(key, delta))
     }
 
     fun toggleDistracting(packageName: String) = update { s ->
@@ -275,10 +280,28 @@ class Store(private val file: File) {
 
     fun setThemeMode(mode: ThemeMode) = update { it.copy(themeMode = mode) }
 
+    fun updateLayout(transform: (LayoutPrefs) -> LayoutPrefs) = update { it.copy(layout = transform(it.layout)) }
+
+    /** Shows or hides a widget's pill on the home screen. */
+    fun togglePill(id: WidgetId) = updateLayout { l ->
+        l.copy(pills = if (id in l.pills) l.pills - id else l.pills + id)
+    }
+
+    fun movePill(id: WidgetId, delta: Int) = updateLayout { l -> l.copy(pills = l.pills.moved(id, delta)) }
+
     companion object {
-        const val MAX_DOCK = 5
+        const val MAX_FAVOURITES = 10
         const val MAX_PROJECT_APPS = 4
     }
+}
+
+/** This list with [item] moved [delta] places (clamped to the ends). */
+fun <T> List<T>.moved(item: T, delta: Int): List<T> {
+    val from = indexOf(item)
+    if (from < 0) return this
+    val to = (from + delta).coerceIn(0, size - 1)
+    if (to == from) return this
+    return toMutableList().apply { add(to, removeAt(from)) }
 }
 
 /** Small, varied encouragement. */
