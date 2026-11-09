@@ -84,21 +84,29 @@ jobs:
 
       # Gradle's download service is sometimes flaky, so fetch it ourselves
       # (CDN first) with retries instead of through the wrapper.
+      - uses: actions/cache@v6
+        with:
+          path: ~/gradle-dist
+          key: gradle-9.6.1-bin
+
       - name: Get Gradle 9.6.1
         run: |
-          for url in https://downloads.gradle.org/distributions/gradle-9.6.1-bin.zip \
-                     https://services.gradle.org/distributions/gradle-9.6.1-bin.zip; do
-            for attempt in 1 2 3; do
-              if curl -fsSL --max-time 300 -o "$RUNNER_TEMP/gradle.zip" "$url"; then
-                unzip -q "$RUNNER_TEMP/gradle.zip" -d "$RUNNER_TEMP"
-                echo "$RUNNER_TEMP/gradle-9.6.1/bin" >> "$GITHUB_PATH"
-                exit 0
-              fi
-              echo "Download from $url failed (attempt $attempt), retrying"
-              sleep 15
+          ZIP=~/gradle-dist/gradle-9.6.1-bin.zip
+          mkdir -p ~/gradle-dist
+          if [ ! -s "$ZIP" ]; then
+            for url in https://downloads.gradle.org/distributions/gradle-9.6.1-bin.zip \
+                       https://services.gradle.org/distributions/gradle-9.6.1-bin.zip; do
+              for attempt in 1 2 3; do
+                curl -fsSL --max-time 300 -o "$ZIP" "$url" && break 2
+                echo "Download from $url failed (attempt $attempt), retrying"
+                rm -f "$ZIP"
+                sleep 15
+              done
             done
-          done
-          exit 1
+          fi
+          [ -s "$ZIP" ] || exit 1
+          unzip -q "$ZIP" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/gradle-9.6.1/bin" >> "$GITHUB_PATH"
 
       - name: Unit tests
         run: gradle --no-daemon testDebugUnitTest
@@ -181,21 +189,29 @@ jobs:
 
       # Gradle's download service is sometimes flaky, so fetch it ourselves
       # (CDN first) with retries instead of through the wrapper.
+      - uses: actions/cache@v6
+        with:
+          path: ~/gradle-dist
+          key: gradle-9.6.1-bin
+
       - name: Get Gradle 9.6.1
         run: |
-          for url in https://downloads.gradle.org/distributions/gradle-9.6.1-bin.zip \
-                     https://services.gradle.org/distributions/gradle-9.6.1-bin.zip; do
-            for attempt in 1 2 3; do
-              if curl -fsSL --max-time 300 -o "$RUNNER_TEMP/gradle.zip" "$url"; then
-                unzip -q "$RUNNER_TEMP/gradle.zip" -d "$RUNNER_TEMP"
-                echo "$RUNNER_TEMP/gradle-9.6.1/bin" >> "$GITHUB_PATH"
-                exit 0
-              fi
-              echo "Download from $url failed (attempt $attempt), retrying"
-              sleep 15
+          ZIP=~/gradle-dist/gradle-9.6.1-bin.zip
+          mkdir -p ~/gradle-dist
+          if [ ! -s "$ZIP" ]; then
+            for url in https://downloads.gradle.org/distributions/gradle-9.6.1-bin.zip \
+                       https://services.gradle.org/distributions/gradle-9.6.1-bin.zip; do
+              for attempt in 1 2 3; do
+                curl -fsSL --max-time 300 -o "$ZIP" "$url" && break 2
+                echo "Download from $url failed (attempt $attempt), retrying"
+                rm -f "$ZIP"
+                sleep 15
+              done
             done
-          done
-          exit 1
+          fi
+          [ -s "$ZIP" ] || exit 1
+          unzip -q "$ZIP" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/gradle-9.6.1/bin" >> "$GITHUB_PATH"
 
       - name: Build a debug APK
         run: gradle --no-daemon assembleDebug
