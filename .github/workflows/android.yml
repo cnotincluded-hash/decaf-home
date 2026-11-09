@@ -120,6 +120,26 @@ jobs:
           fi
           gh release upload "$TAG" "$APK" --clobber
 
+      # Every build on main also goes to a "latest-build" pre-release (easy to grab
+      # on a phone) and to the "builds" branch (just the newest APK).
+      - name: Publish the latest build
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh release view latest-build >/dev/null 2>&1; then
+            gh release create latest-build --prerelease --title "Latest build" --target "$GITHUB_SHA" \
+              --notes "The newest APK from main. Download it on your Android phone and open it. Allow installs from your browser or Files app when Android asks, then tap Install. Then open Decaf Home → Settings → Choose home app."
+          fi
+          gh release upload latest-build "$APK" --clobber
+          mkdir -p /tmp/builds && cp "$APK" /tmp/builds/
+          cd /tmp/builds
+          git init -q -b builds
+          git add .
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "APK from ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" builds
+
   screenshots:
     name: Emulator screenshots
     if: contains(github.event.head_commit.message, '[screenshots]') || (github.event_name == 'workflow_dispatch' && inputs.screenshots)
@@ -168,3 +188,17 @@ jobs:
           name: screenshots
           path: screenshots/
           if-no-files-found: ignore
+
+      - name: Save screenshots to the screenshots branch
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          [ -d screenshots ] || exit 0
+          cp -r screenshots /tmp/shots
+          cd /tmp/shots
+          git init -q -b screenshots
+          git add .
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Screenshots from ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" screenshots
