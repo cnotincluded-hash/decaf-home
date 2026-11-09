@@ -1,6 +1,7 @@
 package com.caffeinenotincluded.decafhome.ui.screens
 
 import android.Manifest
+import android.app.Activity
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -24,12 +26,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import com.caffeinenotincluded.decafhome.data.Celebration
 import com.caffeinenotincluded.decafhome.decaf
 import com.caffeinenotincluded.decafhome.timer.Notifications
 import com.caffeinenotincluded.decafhome.ui.components.CelebrationLayer
 import com.caffeinenotincluded.decafhome.ui.components.DotGrid
 import com.caffeinenotincluded.decafhome.ui.theme.DecafTheme
+import com.caffeinenotincluded.decafhome.ui.theme.LocalDecafColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
@@ -50,6 +55,18 @@ fun DecafRoot(nav: HomeNav) {
     }
 
     DecafTheme(state.themeMode) {
+        // Status and navigation bar icons follow the app's own light/dark choice
+        // (the speed bump is always dark).
+        val view = LocalView.current
+        val darkBars = LocalDecafColors.current.dark || nav.overlay is Overlay.SpeedBump
+        SideEffect {
+            val window = (view.context as? Activity)?.window ?: return@SideEffect
+            WindowCompat.getInsetsController(window, view).apply {
+                isAppearanceLightStatusBars = !darkBars
+                isAppearanceLightNavigationBars = !darkBars
+            }
+        }
+
         // Celebrations: confetti, a banner and a little buzz.
         var celebration by remember { mutableStateOf<Celebration?>(null) }
         var showBanner by remember { mutableStateOf(false) }

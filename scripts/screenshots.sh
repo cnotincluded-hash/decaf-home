@@ -103,6 +103,8 @@ adb shell input swipe 540 2250 540 1200 250
 shot 08-drawer
 
 # 4. Speed bump: Chrome is marked as distracting in the sample data.
+adb shell input tap 540 385   # the search box
+sleep 1
 adb shell input text Chrome
 sleep 1
 adb shell input keyevent KEYCODE_ENTER

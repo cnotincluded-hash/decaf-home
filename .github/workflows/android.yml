@@ -8,8 +8,8 @@ name: Build APK
 #   ANDROID_KEY_ALIAS     decafhome
 #   ANDROID_KEY_PASSWORD  the keystore password
 # Keep the same key forever: Android only installs an update over the app if it's
-# signed with the same key. Without the secrets the run makes a one-off test key,
-# and that APK can't be updated in place later (uninstall first).
+# signed with the same key. Without the secrets, builds share a test key kept in
+# the Actions cache (see "Set up signing").
 #
 # Add [screenshots] to a commit message (or run the workflow by hand) to also boot
 # an Android 15 emulator and save screenshots of the launcher.
@@ -42,6 +42,14 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
+      # Without the secrets, a test key is kept in the Actions cache so that test
+      # builds can still update each other. (The cache is dropped after 7 days
+      # without a build; then a new test key is made.)
+      - uses: actions/cache@v6
+        with:
+          path: .test-signing
+          key: decaf-home-test-signing-v1
+
       - name: Set up signing
         env:
           KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
@@ -52,11 +60,19 @@ jobs:
             echo "$KEYSTORE" | base64 -d > release.jks
             echo "SIGNED_WITH=release" >> "$GITHUB_ENV"
           else
-            echo "::warning::No ANDROID_KEYSTORE secret, so this APK is signed with a one-off test key."
             ALIAS=decafhome
-            PASSWORD=$(openssl rand -hex 16)
-            keytool -genkeypair -keystore release.jks -alias "$ALIAS" -keyalg RSA -keysize 2048 \
-              -validity 10000 -storepass "$PASSWORD" -keypass "$PASSWORD" -dname "CN=Decaf Home test build"
+            if [ -f .test-signing/release.jks ]; then
+              echo "Reusing the cached test key"
+              PASSWORD=$(cat .test-signing/password)
+            else
+              echo "::warning::No ANDROID_KEYSTORE secret and no cached test key, so making a new test key."
+              mkdir -p .test-signing
+              PASSWORD=$(openssl rand -hex 16)
+              echo "$PASSWORD" > .test-signing/password
+              keytool -genkeypair -keystore .test-signing/release.jks -alias "$ALIAS" -keyalg RSA -keysize 2048 \
+                -validity 10000 -storepass "$PASSWORD" -keypass "$PASSWORD" -dname "CN=Decaf Home test build"
+            fi
+            cp .test-signing/release.jks release.jks
             echo "SIGNED_WITH=test" >> "$GITHUB_ENV"
           fi
           {
