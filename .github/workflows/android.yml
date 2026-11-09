@@ -66,6 +66,15 @@ jobs:
             echo "keyPassword=$PASSWORD"
           } > keystore.properties
 
+      - name: Download Gradle (with retries)
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew --no-daemon --version && exit 0
+            echo "Gradle download failed (attempt $attempt), retrying in 20s"
+            sleep 20
+          done
+          exit 1
+
       - name: Unit tests
         run: ./gradlew --no-daemon testDebugUnitTest
 
@@ -124,6 +133,15 @@ jobs:
           java-version: 17
 
       - uses: gradle/actions/setup-gradle@v6
+
+      - name: Download Gradle (with retries)
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew --no-daemon --version && exit 0
+            echo "Gradle download failed (attempt $attempt), retrying in 20s"
+            sleep 20
+          done
+          exit 1
 
       - name: Build a debug APK
         run: ./gradlew --no-daemon assembleDebug
