@@ -66,20 +66,29 @@ jobs:
             echo "keyPassword=$PASSWORD"
           } > keystore.properties
 
-      - name: Download Gradle (with retries)
+      # Gradle's download service is sometimes flaky, so fetch it ourselves
+      # (CDN first) with retries instead of through the wrapper.
+      - name: Get Gradle 9.6.1
         run: |
-          for attempt in 1 2 3; do
-            ./gradlew --no-daemon --version && exit 0
-            echo "Gradle download failed (attempt $attempt), retrying in 20s"
-            sleep 20
+          for url in https://downloads.gradle.org/distributions/gradle-9.6.1-bin.zip \
+                     https://services.gradle.org/distributions/gradle-9.6.1-bin.zip; do
+            for attempt in 1 2 3; do
+              if curl -fsSL --max-time 300 -o "$RUNNER_TEMP/gradle.zip" "$url"; then
+                unzip -q "$RUNNER_TEMP/gradle.zip" -d "$RUNNER_TEMP"
+                echo "$RUNNER_TEMP/gradle-9.6.1/bin" >> "$GITHUB_PATH"
+                exit 0
+              fi
+              echo "Download from $url failed (attempt $attempt), retrying"
+              sleep 15
+            done
           done
           exit 1
 
       - name: Unit tests
-        run: ./gradlew --no-daemon testDebugUnitTest
+        run: gradle --no-daemon testDebugUnitTest
 
       - name: Build the APK
-        run: ./gradlew --no-daemon assembleRelease
+        run: gradle --no-daemon assembleRelease
 
       - name: Name the APK
         run: |
@@ -154,17 +163,26 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
-      - name: Download Gradle (with retries)
+      # Gradle's download service is sometimes flaky, so fetch it ourselves
+      # (CDN first) with retries instead of through the wrapper.
+      - name: Get Gradle 9.6.1
         run: |
-          for attempt in 1 2 3; do
-            ./gradlew --no-daemon --version && exit 0
-            echo "Gradle download failed (attempt $attempt), retrying in 20s"
-            sleep 20
+          for url in https://downloads.gradle.org/distributions/gradle-9.6.1-bin.zip \
+                     https://services.gradle.org/distributions/gradle-9.6.1-bin.zip; do
+            for attempt in 1 2 3; do
+              if curl -fsSL --max-time 300 -o "$RUNNER_TEMP/gradle.zip" "$url"; then
+                unzip -q "$RUNNER_TEMP/gradle.zip" -d "$RUNNER_TEMP"
+                echo "$RUNNER_TEMP/gradle-9.6.1/bin" >> "$GITHUB_PATH"
+                exit 0
+              fi
+              echo "Download from $url failed (attempt $attempt), retrying"
+              sleep 15
+            done
           done
           exit 1
 
       - name: Build a debug APK
-        run: ./gradlew --no-daemon assembleDebug
+        run: gradle --no-daemon assembleDebug
 
       - name: Enable KVM
         run: |
