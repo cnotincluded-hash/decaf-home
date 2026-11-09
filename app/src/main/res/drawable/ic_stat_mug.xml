@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification icon: the mug in white -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M44,78 H136 V132 Q136,156 112,156 H68 Q44,156 44,132 Z" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M136,92 H146 A20,20 0 0 1 146,132 H136"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineJoin="round"
+        android:strokeWidth="14" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M36,166 H164 A6,6 0 0 1 164,178 H36 A6,6 0 0 1 36,166 Z" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M66,60 C58,50 74,42 66,32 C60,24 70,18 66,12 M90,60 C82,50 98,42 90,32 C84,24 94,18 90,12 M114,60 C106,50 122,42 114,32 C108,24 118,18 114,12"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="10" />
+</vector>

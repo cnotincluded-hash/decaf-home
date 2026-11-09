@@ -1,0 +1,73 @@
+package com.caffeinenotincluded.decafhome.data
+
+/** Small daily design prompts: mechanics, art and levels. One per day, same for everyone. */
+object Prompts {
+
+    fun forDay(epochDay: Long, offset: Int): String {
+        val index = Math.floorMod(epochDay + offset, All.size.toLong()).toInt()
+        return All[index]
+    }
+
+    val All = listOf(
+        "Mechanic: a jump that gets stronger the longer you stay still.",
+        "Art: draw a friendly monster using only three colours.",
+        "Level: a room you can only cross by going back the way you came.",
+        "Mechanic: your health bar is also your ammo.",
+        "Art: design a door that tells you what's behind it.",
+        "Level: a puzzle that uses light and shadow.",
+        "Mechanic: enemies copy your last three moves.",
+        "Art: a tiny 16×16 hero with a big personality.",
+        "Level: a shop where the shopkeeper is also the boss.",
+        "Mechanic: time only moves when you move.",
+        "Art: an item icon for something that doesn't exist.",
+        "Level: a map that changes every time you sleep.",
+        "Mechanic: a weapon that grows when you feed it junk.",
+        "Art: redraw your main character as a houseplant.",
+        "Level: an escape where the exit moves.",
+        "Mechanic: gravity flips every 10 seconds.",
+        "Art: a cozy corner of a spaceship.",
+        "Level: a tutorial with zero text.",
+        "Mechanic: you can only save the game by sitting at a campfire with a friend.",
+        "Art: a title screen in one colour plus white.",
+        "Level: a village that is secretly one big creature.",
+        "Mechanic: your pet fights for you, but only if you fed it today.",
+        "Art: animate a 4-frame idle loop for a slime.",
+        "Level: a stealth section where the guards are asleep, mostly.",
+        "Mechanic: dash through enemies to steal one of their powers.",
+        "Art: design a UI frame using only rounded rectangles.",
+        "Level: a boss arena that falls apart as you fight.",
+        "Mechanic: two players share one controller, one button each.",
+        "Art: a weather effect you'd want to stand in.",
+        "Level: a race against your own ghost from yesterday.",
+        "Mechanic: crafting where the order you add things matters.",
+        "Art: a monster that's scary in silhouette and cute up close.",
+        "Level: a maze you see from above but play from inside.",
+        "Mechanic: the music speeds up when you're winning.",
+        "Art: a loading-screen doodle that tells a tiny story.",
+        "Level: a secret area found by doing nothing for a minute.",
+        "Mechanic: you lose a colour every time you take damage.",
+        "Art: design an NPC you'd remember after one line of dialogue.",
+        "Level: an island you unlock one bridge at a time.",
+        "Mechanic: a grappling hook that only sticks to wood.",
+        "Art: a sword that looks handmade by a kid.",
+        "Level: a train with one puzzle per carriage.",
+        "Mechanic: quests that change if you take too long.",
+        "Art: a cozy inventory screen.",
+        "Level: a dungeon built from someone's old house.",
+        "Mechanic: you can rewind, but only three seconds.",
+        "Art: design a food item that heals and a food item that hurts.",
+        "Level: a level that is a single screen with five secrets.",
+        "Mechanic: a combo meter that resets when you get greedy.",
+        "Art: a background parallax layer with something hidden in it.",
+        "Level: a chase scene where you control the camera.",
+        "Mechanic: you build the level as you play it.",
+        "Art: a hand-lettered logo for a game you haven't made yet.",
+        "Level: a calm area with nothing to do but look.",
+        "Mechanic: the floor is lava, but only on odd beats.",
+        "Art: design a character from just their shoes.",
+        "Level: a puzzle you solve by making noise.",
+        "Mechanic: an enemy that runs away and comes back with friends.",
+        "Art: paint the same scene at dawn and at midnight.",
+        "Level: a final room that echoes the first.",
+    )
+}
